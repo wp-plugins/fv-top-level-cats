@@ -34,9 +34,7 @@ This is a known issue, for which there is unfortunately no good workaround. If y
 
 = How do I automatically redirect people from the old category permalink? =
 
-We recommend that you use the [Redirection](http://wordpress.org/extend/plugins/redirection/) plugin and add your old an new category links, or use a Regex redirection
-
-^/category/(.*) -> /$1
+We recommend that you use the [Redirection](http://wordpress.org/extend/plugins/redirection/) plugin and add your old an new category links, or use a Regex redirection rule.
 
 == Uninstall ==
 
