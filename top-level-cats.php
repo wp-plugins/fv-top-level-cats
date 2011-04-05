@@ -3,17 +3,9 @@
 Plugin Name: FV Top Level Categories
 Plugin URI: http://foliovision.com/seo-tools/wordpress/plugins/fv-top-level-categories
 Description: Removes the prefix from the URL for a category. For instance, if your old category link was <code>/category/catname</code> it will now be <code>/catname</code>
-Version: 1.1.2
+Version: 1.1.3
 Author: Foliovision
 Author URI: http://foliovision.com/  
-*/
-
-/*
-Changelog
-1.1.2   fix for /category/child-category redirecting to /child-category page
-1.1.1   fix for deeper nested categories
-1.1   FV Fix for WP 3.1
-1.0.1 Original version
 */
 
 // In case we're running standalone, for some odd reason
@@ -116,41 +108,19 @@ function fv_request_page_instead_category($query_string)
 {   
     //echo '<!-- before '.var_export( $query_string, true ).'-->';
     
-    //  enable this and disable top_level_cats_category_rewrite_rules, top_level_cats_generate_rewrite_rules to prefer categories over pages
-    /*if( isset( $query_string['pagename'] ) ) {
-      $cats = get_categories();
-      foreach( $cats AS $cat_item ) {
-        if( $cat_item->slug == $query_string['pagename'] ) {
-          $query_string['category_name'] = $query_string['pagename'];
-          unset( $query_string['pagename'] );
-        }
-      }
-    } */
     if( isset( $query_string['category_name'] ) ) {
-      global $wpdb;
-      
-      $parts = explode( '/', $query_string['category_name'] );
-      $slug = $wpdb->escape( trim( substr( $query_string['category_name'], strripos( $query_string['category_name'], '/' ) ), '/' ) );
-      $page_exists = $wpdb->get_row( "SELECT ID, post_parent FROM $wpdb->posts WHERE post_name='{$slug}' AND post_type = 'page' AND post_status = 'publish' " );
-      
-      if( $page_exists && $page_exists->post_parent && stripos( $query_string['category_name'], '/' ) !== FALSE ) {
-        $query_string['page_id'] = $page_exists->ID;
-        unset( $query_string['category_name'] );
-      }
-      if( $page_exists && !$page_exists->post_parent && count( $parts ) == 1 ) {  //  fix for /category/child-category redirecting to /child-category page
+      $test_query = new WP_Query( 'pagename='.$query_string['category_name'] );
+      //echo '<!-- test_query '.var_export( $test_query->post_count, true ).'-->';
+      if( $test_query->post_count ) {
         $query_string['pagename'] = $query_string['category_name'];
         unset( $query_string['category_name'] );
+        //echo '<!-- after '.var_export( $query_string, true ).'-->';
+        return $query_string;
       }
     }
     //echo '<!-- after '.var_export( $query_string, true ).'-->';
   
     return $query_string; //  end
 }
-
-/*function fv_redirect_canonical( $url ) {
-  if( $url == 'http://localhost/wordpress-3.1/uncategorized/child' ) return false;
-  return $url;
-}
-add_filter( 'redirect_canonical', 'fv_redirect_canonical' );*/
 
 ?>

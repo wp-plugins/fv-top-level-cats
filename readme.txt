@@ -4,7 +4,7 @@ Donate link: http://foliovision.com/seo-tools/wordpress/plugins/fv-top-level-cat
 Tags: categories, permalink
 Requires at least: 3.1
 Tested up to: 3.1
-Stable tag: 1.1
+Stable tag: 1.3
 
 This is a fix of Top Level Category plugin for Wordpress 3.1.
 
@@ -34,12 +34,19 @@ This plugin works also if you have a permalink structure like %postname% or %cat
 
 We recommend that you use the [Redirection](http://wordpress.org/extend/plugins/redirection/) plugin and add your old an new category links, or use a Regex redirection rule.
 
+= I'm having issues with child categories when I'm using /%category%/%postname% permalink structure =
+
+Make sure your categories have unique slugs - watch out for pages with the same slugs. Normally Wordpress uses the category prefix to distinguish page from a category, but with this plugin you need to make sure the slugs are unique, otherwise some pages might turn up instead of categories.
+
 == Uninstall ==
 
 1. Deactivate the plugin
 1. That's it! :)
 
 == Changelog ==
+
+= 1.1.3 =
+* fix for deeper nested pages
 
 = 1.1.2 =
 * fix for /category/child-category redirecting to /child-category page
