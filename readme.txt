@@ -32,7 +32,7 @@ This plugin works also if you have a permalink structure like %postname% or %cat
 
 = How do I automatically redirect people from the old category permalink? =
 
-We recommend that you use the [Redirection](http://wordpress.org/extend/plugins/redirection/) plugin and add your old an new category links, or use a Regex redirection rule.
+We recommend that you use the [Redirection](http://wordpress.org/extend/plugins/redirection/) plugin and add your old an new category links, or use a Regex redirection rule. Make sure you change Tools -> Redirection -> Options -> URL Monitoring to "Don't monitor", as there is a bug in that feature (also in latest current version 2.2.5) - not related to FV Top Level Categories.
 
 = I'm having issues with child categories when I'm using /%category%/%postname% permalink structure =
 
