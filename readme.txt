@@ -14,7 +14,7 @@ This is a fix of Top Level Category plugin for Wordpress 3.1. It's purpose is to
 
 The Top Level Categories plugin allows you to remove the prefix before the URL to your category page. For example, instead of http://foliovision.com/category/work, you can use http://foliovision.com/work for the address of "work" category. WordPress doesn't allow you to have a blank prefix for categories (they insert `category/` before the name), this plugin works around that restriction.
 
-This plugin works also if you have a permalink structure like %postname% or %category%/%postname% -- this wasn't possible in the original version. However, this feature is might not work properly for child categories at this point. Test carefully!
+This plugin works also if you have a permalink structure like %postname% or %category%/%postname% -- this wasn't possible in the original version. However, this feature might not work properly for child categories at this point. Test carefully!
 
 [Support](http://foliovision.com/seo-tools/wordpress/plugins/fv-top-level-categories)
 
