@@ -1,126 +1,93 @@
 <?php
 /*
-Plugin Name: FV Top Level Categories
+Plugin Name: FV Top Level Categories dev
 Plugin URI: http://foliovision.com/seo-tools/wordpress/plugins/fv-top-level-categories
 Description: Removes the prefix from the URL for a category. For instance, if your old category link was <code>/category/catname</code> it will now be <code>/catname</code>
-Version: 1.1.3
+Version: 1.2
 Author: Foliovision
 Author URI: http://foliovision.com/  
 */
 
-// In case we're running standalone, for some odd reason
-if (function_exists('add_action'))
-{
-	register_activation_hook(__FILE__, 'top_level_cats_activate');
-	register_deactivation_hook(__FILE__, 'top_level_cats_deactivate');
-
-	// Setup filters
-	add_filter('category_rewrite_rules', 'top_level_cats_category_rewrite_rules'); /// ok
-	add_filter('generate_rewrite_rules', 'top_level_cats_generate_rewrite_rules');
-	add_filter('category_link', 'top_level_cats_category_link', 10, 2);
-	
-	///  
-	add_filter( 'page_rewrite_rules', 'fv_page_rewrite_rules' );
-	add_filter( 'request', 'fv_request_page_instead_category' );
-	
-	global $clean_category_rewrites, $clean_rewrites;
-	$clean_category_rewrites = array();
-}
-
-function fv_page_rewrite_rules( $rules ) {
-  unset( $rules["(.+?)/feed/(feed|rdf|rss|rss2|atom)/?$"] );
-  unset( $rules["(.+?)/(feed|rdf|rss|rss2|atom)/?$"] );
-  unset( $rules["(.+?)/page/?([0-9]{1,})/?$"] );
-  unset( $rules["(.+?)(/[0-9]+)?/?$"] );
-  return $rules;
-}
-
-function top_level_cats_activate()
-{
+register_activation_hook(__FILE__,'fv_top_level_categories_refresh_rules');
+add_action('created_category','fv_top_level_categories_refresh_rules');
+add_action('edited_category','fv_top_level_categories_refresh_rules');
+add_action('delete_category','fv_top_level_categories_refresh_rules');
+function fv_top_level_categories_refresh_rules() {
 	global $wp_rewrite;
 	$wp_rewrite->flush_rules();
 }
+register_deactivation_hook(__FILE__,'fv_top_level_categories_deactivate');
+function fv_top_level_categories_deactivate() {
+	remove_filter('category_rewrite_rules', 'fv_top_level_categories_refresh_rules'); // We don't want to insert our custom rules again
+	fv_top_level_categories_refresh_rules();
+}
 
-function top_level_cats_deactivate()
-{
-	// Remove the filters so we don't regenerate the wrong rules when we flush
-	remove_filter('category_rewrite_rules', 'top_level_cats_category_rewrite_rules');
-	remove_filter('generate_rewrite_rules', 'top_level_cats_generate_rewrite_rules');
-	remove_filter('category_link', 'top_level_cats_category_link');
-
+// Remove category base
+add_action('init', 'fv_top_level_categories_permastruct');
+function fv_top_level_categories_permastruct() {
 	global $wp_rewrite;
-	$wp_rewrite->flush_rules();
+	$wp_rewrite->extra_permastructs['category'][0] = '%category%';
 }
 
-function top_level_cats_generate_rewrite_rules($wp_rewrite)
-{
-	global $clean_category_rewrites;
-	$wp_rewrite->rules = $wp_rewrite->rules + $clean_category_rewrites;
-}
-
-function top_level_cats_category_rewrite_rules($category_rewrite)
-{
-	global $clean_category_rewrites;
-  global $wp_rewrite;
-
-  // Make sure to use verbose rules, otherwise we'll clobber our
-  // category permalinks with page permalinks
-  //$wp_rewrite->use_verbose_page_rules = true; /// disabling this will make sure posts work, it was here already
-
-	while (list($k, $v) = each($category_rewrite)) {
-		// Strip off the category prefix
-		$new_k = top_level_cats_remove_cat_base($k);
-		$clean_category_rewrites[$new_k] = $v;
-	}
-
-  foreach( $category_rewrite AS $key => $item ) {
-    if( stripos( $item, 'index.php?pagename' ) !== FALSE ) {
-      unset( $category_rewrite[$key] );
-    }
+// Add our custom category rewrite rules
+add_filter('category_rewrite_rules', 'fv_top_level_categories_rewrite_rules');
+function fv_top_level_categories_rewrite_rules($category_rewrite) {
+	//var_dump($category_rewrite); // For Debugging
+	
+	///  First we need to get full URLs of our pages
+	$pages = get_pages( 'number=0' );
+	$pages_urls = array();
+  foreach( $pages AS $pages_item ) {
+    $pages_urls[] = trim( str_replace( get_bloginfo( 'url' ), '', get_permalink( $pages_item->ID ) ), '/' );
   }
-
+  ///
+	
+	$category_rewrite=array();
+	$categories=get_categories(array('hide_empty'=>false));
+	foreach($categories as $category) {
+		$category_nicename = $category->slug;
+		if ( $category->parent == $category->cat_ID ) // recursive recursion
+			$category->parent = 0;
+		elseif ($category->parent != 0 )
+			$category_nicename = get_category_parents( $category->parent, false, '/', true ) . $category_nicename;
+		
+		/// Let's check if any of the category full URLs matches any of the pages
+		if( in_array( $category_nicename, $pages_urls ) ) {
+		  continue;
+		}
+		///
+		
+		
+		$category_rewrite['('.$category_nicename.')/(?:feed/)?(feed|rdf|rss|rss2|atom)/?$'] = 'index.php?category_name=$matches[1]&feed=$matches[2]';
+		$category_rewrite['('.$category_nicename.')/page/?([0-9]{1,})/?$'] = 'index.php?category_name=$matches[1]&paged=$matches[2]';
+		$category_rewrite['('.$category_nicename.')/?$'] = 'index.php?category_name=$matches[1]';
+	}
+	// Redirect support from Old Category Base
+	global $wp_rewrite;
+	$old_category_base = get_option('category_base') ? get_option('category_base') : 'category';
+	$old_category_base = trim($old_category_base, '/');
+	$category_rewrite[$old_category_base.'/(.*)$'] = 'index.php?category_redirect=$matches[1]';
+	
+	//var_dump($category_rewrite); // For Debugging
 	return $category_rewrite;
 }
 
-function top_level_cats_category_link($cat_link, $cat_id)
-{
-	return top_level_cats_remove_cat_base($cat_link);
+// Add 'category_redirect' query variable
+add_filter('query_vars', 'fv_top_level_categories_query_vars');
+function fv_top_level_categories_query_vars($public_query_vars) {
+	$public_query_vars[] = 'category_redirect';
+	return $public_query_vars;
 }
-
-function top_level_cats_remove_cat_base($link)
-{
-	$category_base = get_option('category_base');
-	
-	// WP uses "category/" as the default
-	if ($category_base == '') 
-		$category_base = 'category';
-
-	// Remove initial slash, if there is one (we remove the trailing slash in the regex replacement and don't want to end up short a slash)
-	if (substr($category_base, 0, 1) == '/')
-		$category_base = substr($category_base, 1);
-
-	$category_base .= '/';
-
-	return preg_replace('|' . $category_base . '|', '', $link, 1);
+// Redirect if 'category_redirect' is set
+add_filter('request', 'fv_top_level_categories_request');
+function fv_top_level_categories_request($query_vars) {
+	//print_r($query_vars); // For Debugging
+	if(isset($query_vars['category_redirect'])) {
+		$catlink = trailingslashit(get_option( 'home' )) . user_trailingslashit( $query_vars['category_redirect'], 'category' );
+		status_header(301);
+		header("Location: $catlink");
+		exit();
+	}
+	return $query_vars;
 }
-
-function fv_request_page_instead_category($query_string)
-{   
-    //echo '<!-- before '.var_export( $query_string, true ).'-->';
-    
-    if( isset( $query_string['category_name'] ) ) {
-      $test_query = new WP_Query( 'pagename='.$query_string['category_name'] );
-      //echo '<!-- test_query '.var_export( $test_query->post_count, true ).'-->';
-      if( $test_query->post_count ) {
-        $query_string['pagename'] = $query_string['category_name'];
-        unset( $query_string['category_name'] );
-        //echo '<!-- after '.var_export( $query_string, true ).'-->';
-        return $query_string;
-      }
-    }
-    //echo '<!-- after '.var_export( $query_string, true ).'-->';
-  
-    return $query_string; //  end
-}
-
 ?>

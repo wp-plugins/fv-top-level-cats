@@ -2,21 +2,21 @@
 Contributors: FolioVision
 Donate link: http://foliovision.com/seo-tools/wordpress/plugins/fv-top-level-categories
 Tags: categories, permalink
-Requires at least: 3.1
-Tested up to: 3.1
-Stable tag: 1.3
+Requires at least: 3.2.1
+Tested up to: 3.3
+Stable tag: trunk
 
-This is a fix of Top Level Category plugin for Wordpress 3.1.
+This is a fix of Top Level Category plugin for Wordpress 3.1. and above.
 
 == Description ==
 
-This is a fix of Top Level Category plugin for Wordpress 3.1. It's purpose is to provide the same behavior as the original plugin, but in new Wordpress versions.
+This is a fix of Top Level Category plugin for Wordpress 3.1. and further versions. It's purpose is to provide the same behavior as the original plugin, but in new Wordpress versions.
 
 The Top Level Categories plugin allows you to remove the prefix before the URL to your category page. For example, instead of http://foliovision.com/category/work, you can use http://foliovision.com/work for the address of "work" category. WordPress doesn't allow you to have a blank prefix for categories (they insert `category/` before the name), this plugin works around that restriction.
 
 This plugin works also if you have a permalink structure like %postname% or %category%/%postname% -- this wasn't possible in the original version. However, this feature might not work properly for child categories at this point. Test carefully!
 
-[Support](http://foliovision.com/seo-tools/wordpress/plugins/fv-top-level-categories)
+[Support](http://foliovision.com/support/fv-top-level-categories/)
 
 == Installation ==
 
@@ -26,7 +26,7 @@ This plugin works also if you have a permalink structure like %postname% or %cat
 
 == Known Issues / Bugs ==
 
-1. This plugin **will not work** if you have a permalink structure like `%postname` or `%category%/%postname%` -- there is currently no workaround
+1. Issue with paging and feed URLs when using `%postname` or `%category%/%postname%` permalink structure should be fixed.
 
 == Frequently Asked Questions ==
 
@@ -44,6 +44,10 @@ Make sure your categories have unique slugs - watch out for pages with the same 
 1. That's it! :)
 
 == Changelog ==
+
+= 1.2 =
+* fix for WP 3.3
+* fix for /%categor%/%post-name% permalink structure
 
 = 1.1.3 =
 * fix for deeper nested pages
