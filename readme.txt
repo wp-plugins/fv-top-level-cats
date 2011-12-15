@@ -6,7 +6,7 @@ Requires at least: 3.2.1
 Tested up to: 3.3
 Stable tag: trunk
 
-This is a fix of Top Level Category plugin for Wordpress 3.1. and above.
+This is a fix of Top Level Categories plugin for Wordpress 3.1. and above.
 
 == Description ==
 
