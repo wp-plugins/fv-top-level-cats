@@ -3,23 +3,25 @@
 Plugin Name: FV Top Level Categories
 Plugin URI: http://foliovision.com/seo-tools/wordpress/plugins/fv-top-level-categories
 Description: Removes the prefix from the URL for a category. For instance, if your old category link was <code>/category/catname</code> it will now be <code>/catname</code>
-Version: 1.2
+Version: 1.3
 Author: Foliovision
 Author URI: http://foliovision.com/  
 */
 
 register_activation_hook(__FILE__,'fv_top_level_categories_refresh_rules');
+
 add_action('created_category','fv_top_level_categories_refresh_rules');
 add_action('edited_category','fv_top_level_categories_refresh_rules');
 add_action('delete_category','fv_top_level_categories_refresh_rules');
+
 function fv_top_level_categories_refresh_rules() {
-	global $wp_rewrite;
-	$wp_rewrite->flush_rules();
+	add_option('fv_top_level_categories_rewrite_rules_flush', 'true');
 }
 register_deactivation_hook(__FILE__,'fv_top_level_categories_deactivate');
+
 function fv_top_level_categories_deactivate() {
 	remove_filter('category_rewrite_rules', 'fv_top_level_categories_refresh_rules'); // We don't want to insert our custom rules again
-	fv_top_level_categories_refresh_rules();
+	delete_option('fv_top_level_categories_rewrite_rules_flush');
 }
 
 // Remove category base
@@ -27,6 +29,11 @@ add_action('init', 'fv_top_level_categories_permastruct');
 function fv_top_level_categories_permastruct() {
 	global $wp_rewrite;
 	$wp_rewrite->extra_permastructs['category'][0] = '%category%';
+	
+	if (get_option('fv_top_level_categories_rewrite_rules_flush') == 'true') {
+		flush_rewrite_rules();
+		delete_option('fv_top_level_categories_rewrite_rules_flush');
+	}	
 }
 
 // Add our custom category rewrite rules
@@ -78,6 +85,7 @@ function fv_top_level_categories_query_vars($public_query_vars) {
 	$public_query_vars[] = 'category_redirect';
 	return $public_query_vars;
 }
+
 // Redirect if 'category_redirect' is set
 add_filter('request', 'fv_top_level_categories_request');
 function fv_top_level_categories_request($query_vars) {
