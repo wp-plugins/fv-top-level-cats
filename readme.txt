@@ -30,6 +30,10 @@ This plugin works also if you have a permalink structure like %postname% or %cat
 
 == Frequently Asked Questions ==
 
+= I get not found/404 errors on my posts/category URLs! =
+
+Just visit Settings --> Permalinks to refresh the rewrite rules and the issues should disappear.
+
 = How do I automatically redirect people from the old category permalink? =
 
 We recommend that you use the [Redirection](http://wordpress.org/extend/plugins/redirection/) plugin and add your old an new category links, or use a Regex redirection rule. Make sure you change Tools -> Redirection -> Options -> URL Monitoring to "Don't monitor", as there is a [bug](http://wordpress.org/support/topic/plugin-redirection-my-homepage-is-being-redirected-to-a-page-need-some-help) in that feature (also in latest current version 2.2.5) - not related to FV Top Level Categories.
